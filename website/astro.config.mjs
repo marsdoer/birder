@@ -98,10 +98,10 @@ export default defineConfig({
       },
       manifest: {
         includeAssets: ['favicon.ico', 'icons/apple-icon-180.png'],
-        name: 'Strudel REPL',
-        short_name: 'Strudel',
+        name: 'birder',
+        short_name: 'birder',
         description:
-          'Strudel is a music live coding environment for the browser, porting the TidalCycles pattern language to JavaScript.',
+          'birder is a Strudel-based environment for live coding with bird sounds',
         theme_color: '#222222',
         icons: [
           {
