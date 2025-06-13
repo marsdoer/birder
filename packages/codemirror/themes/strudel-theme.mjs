@@ -10,10 +10,10 @@ export const settings = {
   lineBackground: 'transparent',
   gutterBackground: 'transparent',
   gutterForeground: 'black',
-  light: false,
+  light: true,
 };
 export default createTheme({
-  theme: 'dark',
+  theme: 'light',
   settings,
   styles: [
     { tag: t.labelName, color: 'inherit' },
