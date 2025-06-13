@@ -34,6 +34,6 @@ export default createTheme({
     { tag: t.attributeName, color: 'inherit' },
     { tag: t.propertyName, color: 'inherit' },
     { tag: t.className, color: 'inherit' },
-    { tag: t.invalid, color: 'inherit' },
+    { tag: t.invalid, color: 'white' },
   ],
 });
