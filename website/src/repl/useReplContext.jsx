@@ -1,7 +1,7 @@
 /*
-Repl.jsx - <short description TODO>
-Copyright (C) 2022 Strudel contributors - see <https://github.com/tidalcycles/strudel/blob/main/repl/src/App.js>
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+Repl.jsx - REPL component for Strudel with custom code on load
+Copyright (C) 2022 Strudel contributors
+License: GNU Affero GPLv3 or later
 */
 
 import { code2hash, getPerformanceTimeSeconds, logger, silence } from '@strudel/core';
@@ -36,7 +36,7 @@ import './Repl.css';
 import { setInterval, clearInterval } from 'worker-timers';
 import { getMetadata } from '../metadata_parser';
 
-const { latestCode, maxPolyphony, audioDeviceName, multiChannelOrbits } = settingsMap.get();
+const { maxPolyphony, audioDeviceName, multiChannelOrbits } = settingsMap.get();
 let modulesLoading, presets, drawContext, clearCanvas, audioReady;
 
 if (typeof window !== 'undefined') {
@@ -59,8 +59,6 @@ async function getModule(name) {
   return modules.find((m) => m.packageName === name);
 }
 
-const initialCode = `// LOADING`;
-
 export function useReplContext() {
   const { isSyncEnabled, audioEngineTarget } = useSettings();
   const shouldUseWebaudio = audioEngineTarget !== audioEngineTargets.osc;
@@ -79,7 +77,7 @@ export function useReplContext() {
       transpiler,
       autodraw: false,
       root: containerRef.current,
-      initialCode,
+      initialCode: '',
       pattern: silence,
       drawTime,
       drawContext,
@@ -95,12 +93,11 @@ export function useReplContext() {
       beforeEval: () => audioReady,
       afterEval: (all) => {
         const { code } = all;
-        //post to iframe parent (like Udels) if it exists...
         window.parent?.postMessage(code);
-
         setLatestCode(code);
         window.location.hash = '#' + code2hash(code);
         setDocumentTitle(code);
+
         const viewingPatternData = getViewingPatternData();
         setVersionDefaultsFrom(code);
         const data = { ...viewingPatternData, code };
@@ -110,7 +107,6 @@ export function useReplContext() {
         if (isExamplePattern) {
           const codeHasChanged = code !== viewingPatternData.code;
           if (codeHasChanged) {
-            // fork example
             const newPattern = userPattern.duplicate(data);
             id = newPattern.id;
             setViewingPatternData(newPattern.data);
@@ -123,26 +119,20 @@ export function useReplContext() {
       },
       bgFill: false,
     });
+
     window.strudelMirror = editor;
 
-    // init settings
-    initCode().then(async (decoded) => {
-      let code, msg;
-      if (decoded) {
-        code = decoded;
-        msg = `I have loaded the code from the URL.`;
-      } else if (latestCode) {
-        code = latestCode;
-        msg = `Your last session has been loaded!`;
-      } else {
-        /* const { code: randomTune, name } = await getRandomTune();
-        code = randomTune; */
-        code = '$: s("[bd <hh oh>]*2").bank("tr909").dec(.4)';
-        msg = `Default code has been loaded`;
-      }
+    initCode().then(async () => {
+      const code = `setcpm(60)
+b:n(berlin.fast(4).mul(25).seg(8)).scale("d:minor").pan(0)
+.s("piano,pink").lpf(berlin.range(200,3000).fast(2))._pianoroll()
+
+p:n(perlin.fast(4).mul(25).seg(8)).scale("d:minor").pan(1)
+.s("piano,pink").lpf(perlin.range(200,3000).fast(2))._pianoroll()
+`;
       editor.setCode(code);
       setDocumentTitle(code);
-      logger(`Welcome to Strudel! ${msg} Press play or hit ctrl+enter to run it!`, 'highlight');
+      logger(`Welcome to Strudel! Your custom code has been loaded!`, 'highlight');
     });
 
     editorRef.current = editor;
@@ -153,8 +143,6 @@ export function useReplContext() {
   const editorRef = useRef();
   const containerRef = useRef();
 
-  // this can be simplified once SettingsTab has been refactored to change codemirrorSettings directly!
-  // this will be the case when the main repl is being replaced
   const _settings = useStore(settingsMap, { keys: Object.keys(defaultSettings) });
   useEffect(() => {
     let editorSettings = {};
@@ -165,10 +153,6 @@ export function useReplContext() {
     });
     editorRef.current?.updateSettings(editorSettings);
   }, [_settings]);
-
-  //
-  // UI Actions
-  //
 
   const setDocumentTitle = (code) => {
     const meta = getMetadata(code);
@@ -186,7 +170,7 @@ export function useReplContext() {
     clearHydra();
     resetLoadedSounds();
     editorRef.current.repl.setCps(0.5);
-    await prebake(); // declare default samples
+    await prebake();
   };
 
   const handleUpdate = async (patternData, reset = false) => {
@@ -201,6 +185,7 @@ export function useReplContext() {
   const handleEvaluate = () => {
     editorRef.current.evaluate();
   };
+
   const handleShuffle = async () => {
     const patternData = await getRandomTune();
     const code = patternData.code;
@@ -213,6 +198,7 @@ export function useReplContext() {
   };
 
   const handleShare = async () => shareCode(replState.code);
+
   const context = {
     started,
     pending,
@@ -228,5 +214,6 @@ export function useReplContext() {
     editorRef,
     containerRef,
   };
+
   return context;
 }
