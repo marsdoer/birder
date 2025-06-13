@@ -1,13 +1,13 @@
 import { tags as t } from '@lezer/highlight';
 import { createTheme } from './theme-helper.mjs';
 export const settings = {
-  background: 'transparent',
+  background: 'white',
   foreground: 'black',
   caret: 'black',
   selection: 'rgba(80, 135, 217, 0.5)',
   selectionMatch: '#ffffff26',
   lineHighlight: 'transparent',
-  lineBackground: 'transparent',
+  lineBackground: 'white',
   gutterBackground: 'transparent',
   gutterForeground: 'black',
   light: true,
