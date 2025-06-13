@@ -123,12 +123,84 @@ export function useReplContext() {
     window.strudelMirror = editor;
 
     initCode().then(async () => {
-      const code = `setcpm(60)
-b:n(berlin.fast(4).mul(25).seg(8)).scale("d:minor").pan(0)
-.s("piano,pink").lpf(berlin.range(200,3000).fast(2))._pianoroll()
+      const code = `//birder is a Strudel-based environment for live coding with bird sounds.
+//getting started with Strudel: https://strudel.cc/workshop/getting-started/ 
 
-p:n(perlin.fast(4).mul(25).seg(8)).scale("d:minor").pan(1)
-.s("piano,pink").lpf(perlin.range(200,3000).fast(2))._pianoroll()
+setcpm(20);
+
+samples({
+  goldfinch: 'https://chestersoundproject.com/sounds/american_goldfinch.mp3'
+});
+
+//a list of samples can be found at: https://chestersoundproject.com/archive
+
+//           -##                          ...                   
+//          ######+                  +##########+               
+//             +######.        .##################.             
+//                 ################################.            
+//                   #############################+++-          
+//                    ##########################-               
+//                  +###########################                
+//                    .########################-                
+//                      #######################                 
+//                      .#####################                  
+//                        ##################                    
+//                          #############+                      
+//                           ##    -#                           
+//                            +      #                          
+//                            #       -#   
+
+const pad = "<ab3 c4 eb4> <db3 f3 ab3> <eb3 g3 bb3> <db3 f3 ab3>";
+const ocarina = "<f4 g4 ab4 ~ g4 f4 ~ ~>";
+const choir = "<c5 eb5 ab5 c6 eb6 ab6 c6 eb5>";
+
+let chirp = s("goldfinch")
+  .mask("<1 0 0 0>")
+  .gain(0.8)
+  .attack(0.5)
+  .release(4)
+  .room(1.1)
+  .roomsize(12)
+  .pan(sine.range(-0.6, 0.6).slow(9));
+
+stack(
+  note(pad)
+    .sound("gm_pad_warm:2")._pianoroll()
+    .gain(0.3)
+    .attack(1.5)
+    .release(3)
+    .room(1.2)
+    .roomsize(12)
+    .lpf(sine.range(400, 1300).slow(15))
+    .phaser(0.2)
+    .delay(2, 0.4, 0.3)
+    .pan(sine.range(-0.3, 0.3).slow(10)),
+
+  note(ocarina)
+    .sound("gm_ocarina:2")._pianoroll()
+    .gain(0.2)
+    .attack(0.6)
+    .release(2)
+    .room(1)
+    .roomsize(12)
+    .delay(3, 0.35, 0.25)
+    .pan(sine.range(-0.5, 0.5).slow(12)),
+
+  note(choir)
+    .sound("gm_synth_choir:1")._pianoroll()
+    .gain(0.2)
+    .attack(1.5)
+    .release(3)
+    .room(1.2)
+    .roomsize(12)
+    .lpf(sine.range(400, 1300).slow(15))
+    .phaser(0.2)
+    .delay(2, 0.4, 0.3)
+    .pan(sine.range(-0.3, 0.3).slow(10)),
+
+  chirp
+).cpm(20);
+
 `;
       editor.setCode(code);
       setDocumentTitle(code);
